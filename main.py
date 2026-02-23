@@ -2,7 +2,7 @@ import chess
 
 board= chess.Board()
 
-while (True):
+while (not board.is_game_over()):
     print(board)
     while(True):
         legal_moves = list(board.legal_moves)

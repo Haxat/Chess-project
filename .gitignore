@@ -1,0 +1,13 @@
+# Environnement virtuel
+.venv/
+
+# Cache Python compilé
+__pycache__/
+*.pyc
+
+# Fichiers spécifiques à l’éditeur
+.vscode/
+.idea/
+
+# Fichiers système Windows
+Thumbs.db

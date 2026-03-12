@@ -23,6 +23,19 @@ def evaluate(board):
 
     return score
 
+def terminal_score(board):
+    if (not board.is_game_over()):
+        return None
+    
+    outcome = board.outcome()
+
+    if (outcome.winner is True):
+        return float('inf')
+    elif (outcome.winner is False):
+        return float('-inf')    
+    else:
+        return 0    
+
 def Botgreedy(board,legal_moves):
     score=0
     meilleur_coup = legal_moves[0]
@@ -30,19 +43,9 @@ def Botgreedy(board,legal_moves):
         score_meilleur_coup=float('-inf')
         for m in legal_moves:
             board.push(m)
-            if (board.is_game_over()):
-                outcome=board.outcome()
-                #Blanc gagne
-                if(outcome.winner):
-                    score=float('inf')
-                #Défaite Blanc 
-                elif(outcome.winner==False):
-                    score=float('-inf')
-                #PAT
-                else:
-                    score=0
+            score = terminal_score(board)
             #Coup Normal
-            else:
+            if(score is None):
                 score=evaluate(board)
             board.pop()
             if(score==float('inf')):
@@ -55,19 +58,9 @@ def Botgreedy(board,legal_moves):
         score_meilleur_coup=float('inf')
         for m in legal_moves:
             board.push(m)
-            if(board.is_game_over()):
-                outcome=board.outcome()
-                #Noir gagne
-                if(outcome.winner==False):
-                    score=float('-inf')
-                #Défaite 
-                elif(outcome.winner==True):
-                    score=float('inf')
-                #PAT
-                else:
-                    score=0
+            score=terminal_score(board)
             #Coup Normal
-            else:
+            if (score is None):
                 score=evaluate(board)
             board.pop()
             if(score==float('-inf')):
@@ -103,6 +96,68 @@ def Humain(board,legal_moves):
 
 
 
+
+
+
+def MiniMax(board,depth,maximizing_player):
+    ts = terminal_score(board)
+    if (ts is not None):
+        return ts
+    
+    if(depth==0):
+        return evaluate(board)
+    
+    legal_moves = list(board.legal_moves)
+
+    if (maximizing_player):
+        best_score=float('-inf')
+        for m in legal_moves:         
+            board.push(m)
+            score=MiniMax(board,depth-1,not maximizing_player)
+            board.pop()
+            best_score=max(score,best_score)
+    else:
+        best_score=float('inf')
+        for m in legal_moves:
+            board.push(m)
+            score=MiniMax(board,depth-1,not maximizing_player)
+            board.pop()
+            best_score=min(score,best_score)
+    return best_score
+
+
+
+def BotMiniMax(board, legal_moves, depth):
+    best_move=legal_moves[0]
+    if (board.turn==chess.WHITE):
+        best_score= float('-inf')
+        for m in legal_moves:
+            board.push(m)
+            score=MiniMax(board, depth-1, False)
+            board.pop()
+            if(score==float('inf')):
+                return m
+            elif (score>best_score):
+                best_score=score
+                best_move=m
+    else:
+        best_score= float(('inf'))
+        for m in legal_moves:  
+            board.push(m)
+            score=MiniMax(board, depth-1, True)
+            board.pop()
+            if(score==float('-inf')):
+                return m
+            elif (score<best_score):
+                best_score=score
+                best_move=m
+    return best_move
+
+
+
+
+
+
 #Jeu
 
 while (not board.is_game_over()):
@@ -111,18 +166,18 @@ while (not board.is_game_over()):
 
     #Blanc
     if(board.turn==chess.WHITE):
-        print("Cout Blanc: ")
+        print("Coup Blanc: ")
         m=BotRandom(legal_moves)
     #Noir
     else:
-        print("Cout Noir: ")
+        print("Coup Noir: ")
         m=Botgreedy(board,legal_moves)
     board.push(m)
     
 
 
 
-
+#Résultat
 print(board)
 if(board.result()=="1-0"):
     print("Victoire blanc")

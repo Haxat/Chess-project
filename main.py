@@ -1,7 +1,7 @@
 import chess
 import random
 
-board= chess.Board()
+
 
 def BotRandom(legal_moves):
     return random.choice(legal_moves)
@@ -14,12 +14,37 @@ def evaluate(board):
     score+=len(board.pieces(chess.ROOK, chess.WHITE))*5
     score+=len(board.pieces(chess.QUEEN, chess.WHITE))*9
 
-
     score-=len(board.pieces(chess.PAWN, chess.BLACK))
     score-=len(board.pieces(chess.KNIGHT, chess.BLACK))*3
     score-=len(board.pieces(chess.BISHOP, chess.BLACK))*3
     score-=len(board.pieces(chess.ROOK, chess.BLACK))*5
     score-=len(board.pieces(chess.QUEEN, chess.BLACK))*9
+
+    #Bonnus sur le nb de coups légaux
+    board_WHITE=board.copy()
+    board_WHITE.turn=chess.WHITE
+
+    board_BLACK=board.copy()
+    board_BLACK.turn=chess.BLACK
+
+    legal_moves_WHITE=list(board_WHITE.legal_moves)
+    legal_moves_BLACK=list(board_BLACK.legal_moves)
+
+    score+=len(legal_moves_WHITE)*0.1 - len(legal_moves_BLACK)*0.1
+
+
+
+    #Contrôle du centre
+    cases_centre = [chess.D4, chess.E4, chess.D5, chess.E5]
+
+    for case in cases_centre:
+        piece = board.piece_at(case)
+        if (piece is None):
+            continue
+        elif (piece.color==chess.WHITE):
+            score+=0.1
+        else:
+            score-=0.1
 
     return score
 
@@ -159,25 +184,30 @@ def BotMiniMax(board, legal_moves, depth):
 
 
 #Jeu
-
+board= chess.Board()
+nb_coup=0
+print(board)
 while (not board.is_game_over()):
-    print(board)
+    print("-----------------------------------------------------")
     legal_moves = list(board.legal_moves)
 
     #Blanc
     if(board.turn==chess.WHITE):
-        print("Coup Blanc: ")
-        m=BotRandom(legal_moves)
+        m=BotMiniMax(board,legal_moves,3)
+        print(f"Coup Blanc: {m}")
     #Noir
     else:
-        print("Coup Noir: ")
         m=Botgreedy(board,legal_moves)
+        print(f"Coup Noir: {m}")
     board.push(m)
+    print(board)
+    nb_coup+=1
     
 
 
 
 #Résultat
+print("-----------------------------------------------------")
 print(board)
 if(board.result()=="1-0"):
     print("Victoire blanc")
@@ -188,7 +218,7 @@ elif(board.result()=="1/2-1/2"):
 else:
     print("Erreur")
 print(board.outcome())
-
+print(f"Nombre de coups joué {nb_coup}")
 
 
 

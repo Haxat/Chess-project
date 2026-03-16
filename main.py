@@ -1,7 +1,14 @@
 import chess
 import random
+import time
 
 
+def init_stats():
+    return{
+        "nodes": 0,
+        "leaves": 0,
+        "cutoffs": 0,
+    }
 
 def BotRandom(legal_moves):
     return random.choice(legal_moves)
@@ -124,12 +131,16 @@ def Humain(board,legal_moves):
 
 
 
-def MiniMax(board,depth,maximizing_player):
+def MiniMax(board,depth,maximizing_player,stats):
+
+    stats["nodes"] +=1
     ts = terminal_score(board)
     if (ts is not None):
+        stats["leaves"] +=1
         return ts
     
     if(depth==0):
+        stats["leaves"] +=1
         return evaluate(board)
     
     legal_moves = list(board.legal_moves)
@@ -138,14 +149,14 @@ def MiniMax(board,depth,maximizing_player):
         best_score=float('-inf')
         for m in legal_moves:         
             board.push(m)
-            score=MiniMax(board,depth-1,not maximizing_player)
+            score=MiniMax(board,depth-1,not maximizing_player,stats)
             board.pop()
             best_score=max(score,best_score)
     else:
         best_score=float('inf')
         for m in legal_moves:
             board.push(m)
-            score=MiniMax(board,depth-1,not maximizing_player)
+            score=MiniMax(board,depth-1,not maximizing_player,stats)
             board.pop()
             best_score=min(score,best_score)
     return best_score
@@ -153,15 +164,19 @@ def MiniMax(board,depth,maximizing_player):
 
 
 def BotMiniMax(board, legal_moves, depth):
+    time_start=time.perf_counter()
+    stats = init_stats()
     best_move=legal_moves[0]
     if (board.turn==chess.WHITE):
         best_score= float('-inf')
         for m in legal_moves:
             board.push(m)
-            score=MiniMax(board, depth-1, False)
+            score=MiniMax(board, depth-1, False,stats)
             board.pop()
             if(score==float('inf')):
-                return m
+                best_score=score
+                best_move=m
+                break
             elif (score>best_score):
                 best_score=score
                 best_move=m
@@ -169,23 +184,111 @@ def BotMiniMax(board, legal_moves, depth):
         best_score= float(('inf'))
         for m in legal_moves:  
             board.push(m)
-            score=MiniMax(board, depth-1, True)
+            score=MiniMax(board, depth-1, True,stats)
             board.pop()
             if(score==float('-inf')):
-                return m
+                best_score=score
+                best_move=m
+                break
             elif (score<best_score):
                 best_score=score
                 best_move=m
+    time_end=time.perf_counter()
+    print(f"Temps du coup: {time_end-time_start:.4f}")
+    print("Cutoffs :", stats["cutoffs"])
+    print("Internal nodes :", stats["nodes"] - stats["leaves"])
+    print("Leaves visited :", stats["leaves"])
+    
+    
     return best_move
 
 
 
+def AlphaBeta(board,depth,alpha,beta,maximizing_player,stats):
+    stats["nodes"] +=1
+    ts = terminal_score(board)
 
+    if (ts is not None):
+        stats["leaves"] +=1
+        return ts
+    
+    if(depth==0):
+        stats["leaves"] +=1
+        return evaluate(board)
+    
+    legal_moves = list(board.legal_moves)
+
+    if (maximizing_player):
+        best_score=float('-inf')
+        for m in legal_moves:         
+            board.push(m)
+            score=AlphaBeta(board,depth-1,alpha,beta,not maximizing_player,stats)
+            board.pop()
+            best_score=max(best_score,score)
+            alpha=max(alpha,best_score)
+            if(alpha>=beta):
+                stats["cutoffs"] += 1
+                break
+    else:
+        best_score=float('inf')
+        for m in legal_moves:
+            board.push(m)
+            score=AlphaBeta(board,depth-1,alpha,beta,not maximizing_player,stats)
+            board.pop()
+            best_score=min(best_score,score)
+            beta=min(beta,best_score)
+            if(alpha>=beta):
+                stats["cutoffs"] += 1
+                break
+    return best_score
+
+def BotAlphaBeta(board, legal_moves, depth):
+    time_start=time.perf_counter()
+    stats = init_stats()
+    best_move=legal_moves[0]
+    alpha=float("-inf")
+    beta=float("inf")
+    if (board.turn==chess.WHITE):
+        best_score= float('-inf')
+        for m in legal_moves:
+            board.push(m)
+            score=AlphaBeta(board, depth-1,alpha,beta, False,stats)
+            board.pop()
+            if(score==float('inf')):
+                best_score=score
+                best_move=m
+                break
+            elif (score>best_score):
+                best_score=score
+                best_move=m
+            alpha = max(alpha, best_score)
+    else:
+        best_score= float('inf')
+        for m in legal_moves:  
+            board.push(m)
+            score=AlphaBeta(board, depth-1, alpha, beta, True,stats)
+            board.pop()
+            if(score==float('-inf')):
+                best_score=score
+                best_move=m
+                break
+            elif (score<best_score):
+                best_score=score
+                best_move=m
+            beta = min(beta, best_score)    
+    time_end=time.perf_counter()
+    print(f"Temps du coup: {time_end-time_start:.4f}")
+    print("Cutoffs :", stats["cutoffs"])
+    print("Internal nodes :", stats["nodes"] - stats["leaves"])
+    print("Leaves visited :", stats["leaves"])
+    return best_move
 
 
 #Jeu
 board= chess.Board()
 nb_coup=0
+
+
 print(board)
 while (not board.is_game_over()):
     print("-----------------------------------------------------")
@@ -197,7 +300,7 @@ while (not board.is_game_over()):
         print(f"Coup Blanc: {m}")
     #Noir
     else:
-        m=Botgreedy(board,legal_moves)
+        m=BotAlphaBeta(board,legal_moves,5)
         print(f"Coup Noir: {m}")
     board.push(m)
     print(board)

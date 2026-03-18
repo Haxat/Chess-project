@@ -1,5 +1,5 @@
 import chess
-from evaluation import evaluate, terminal_score
+from evaluation import evaluate, terminal_score, evaluate_fast
 
 def init_stats():
     return{
@@ -93,7 +93,7 @@ def quiescence_search(board,alpha,beta,maximizing_player):
     ts = terminal_score(board)
     if ts is not None:
         return ts
-    stand_pat=evaluate(board)
+    stand_pat=evaluate_fast(board)
     best_score=stand_pat
     if maximizing_player:
         if stand_pat>=beta:

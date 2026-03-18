@@ -171,7 +171,7 @@ while (not board.is_game_over()):
 
     #Blanc
     if(board.turn==chess.WHITE):
-        m=BotMiniMax(board,legal_moves,2)
+        m=BotAlphaBeta(board,legal_moves,2)
         print(f"Coup Blanc: {m}")
     #Noir
     else:

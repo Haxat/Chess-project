@@ -5,8 +5,6 @@ from evaluation import evaluate, terminal_score, evaluate_fast, mvv_lva_score
 
 def init_stats():
     return{
-        "position":"",
-        "depth": 0,
         "nodes": 0,
         "leaves": 0,
         "cutoffs": 0,

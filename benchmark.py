@@ -3,7 +3,7 @@ import chess
 import bots
 import search
 import evaluation
-
+import csv
 
 def benchmark_position(board,depth,eval_fn,moves_ordernoring_fn):
     stats=search.init_stats()
@@ -21,7 +21,7 @@ def benchmark_position(board,depth,eval_fn,moves_ordernoring_fn):
     q_nodes=stats["q_nodes"]
 
     return{
-        "best_move":best_move,
+        "best_move":str(best_move),
         "time":elapsed,
         "nodes":nodes,
         "leaves":leaves ,
@@ -84,18 +84,32 @@ TEST_POSITIONS = [
 
 
 
+def save_benchmark_results_csv(results, filename):
+    if not results:
+        return
+    
+    fieldnames=list(results[0].keys())
+
+    with open(filename, mode="w", newline="",encoding="utf-8") as file:
+        writer = csv.DictWriter(file,fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(results)
+
 def run_benchmark_suite():
     depth = 2
+    results=[]
+    eval_fn=evaluation.evaluate_fast
+    moves_ordernoring_fn=search.ordering_moves_MVV_LVA
     for name,fen in TEST_POSITIONS:
         board=chess.Board(fen)
-        eval_fn=evaluation.evaluate_fast
-        moves_ordernoring_fn=search.ordering_moves_MVV_LVA
-
+        
         result = benchmark_position(board,depth,eval_fn,moves_ordernoring_fn)
+        result["position"] = name
+        result["depth"] = depth
 
         print("===============Benchmark=================")
-        print(f"Position          :{name}")
-        print(f"Depth             :{depth}")
+        print(f"Position          :{result['position']}")
+        print(f"Depth             :{result['depth']}")
         print(f"Best move         :{result['best_move']}")
         print(f"Time              :{result['time']:.4f}s")
         print(f"Nodes             :{result['nodes']}")
@@ -105,6 +119,29 @@ def run_benchmark_suite():
         print(f"NPS               :{result['nps']:.0f}")
         print(f"Quiescence Nodes  :{result['q_nodes']}")
 
+        results.append(result)
+    return results
+
+
+def print_benchmark_summary(results):
+    if not results:
+        return
+    
+    total_time=sum(r["time"] for r in results)
+    total_nodes=sum(r["nodes"] for r in results)
+    total_q_nodes=sum(r["q_nodes"] for r in results)
+
+    print("===============Summary=================")
+    print(f"Nombres de runs        :{len(results)}")
+    print(f"Temps totals           :{total_time:.4f}s")
+    print(f"Nodes totals           :{total_nodes}")
+    print(f"Total q_nodes          :{total_q_nodes}")
+    print(f"Temps moyen            :{total_time/len(results):.4f}s")
+
 
 if __name__=="__main__":
-    run_benchmark_suite()
+
+    results= run_benchmark_suite()
+
+    print_benchmark_summary(results)
+    save_benchmark_results_csv(results,"benchmark_results.csv")

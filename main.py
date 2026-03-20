@@ -19,11 +19,11 @@ def run_game():
         stats=search.init_stats()
         #Blanc
         if(board.turn==chess.WHITE):
-            m=bots.BotAlphaBeta(board,legal_moves,5,stats)
+            m=bots.BotAlphaBeta(board,legal_moves,5,stats,evaluation.evaluate_fast,search.ordering_moves_MVV_LVA)
             print(f"Coup Blanc: {m}")
         #Noir
         else:
-            m=bots.BotAlphaBeta(board,legal_moves,2,stats)
+            m=bots.BotAlphaBeta(board,legal_moves,2,stats,evaluation.evaluate_fast,search.ordering_moves_MVV_LVA)
             print(f"Coup Noir: {m}")
         board.push(m)
         print(f"Evaluation: {evaluation.evaluate(board)}")

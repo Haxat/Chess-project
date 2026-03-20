@@ -2,15 +2,15 @@ import time
 import chess
 import bots
 import search
+import evaluation
 
 
-
-def benchmark_position(board,depth):
+def benchmark_position(board,depth,eval_fn,moves_ordernoring_fn):
     stats=search.init_stats()
 
     legal_moves=list(board.legal_moves)
     start = time.perf_counter()
-    best_move=bots.BotAlphaBeta(board,legal_moves,depth,stats)
+    best_move=bots.BotAlphaBeta(board,legal_moves,depth,stats,eval_fn,moves_ordernoring_fn)
     end = time.perf_counter()
 
     elapsed = end - start
@@ -88,9 +88,10 @@ def run_benchmark_suite():
     depth = 2
     for name,fen in TEST_POSITIONS:
         board=chess.Board(fen)
-        
+        eval_fn=evaluation.evaluate_fast
+        moves_ordernoring_fn=search.ordering_moves_MVV_LVA
 
-        result = benchmark_position(board,depth)
+        result = benchmark_position(board,depth,eval_fn,moves_ordernoring_fn)
 
         print("===============Benchmark=================")
         print(f"Position          :{name}")

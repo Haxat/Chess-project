@@ -71,14 +71,13 @@ def Humain(board,legal_moves):
 
 
 
-def BotMiniMax(board, legal_moves, depth,stats):
-    time_start=time.perf_counter()
+def BotMiniMax(board, legal_moves, depth,stats,eval_fn):
     best_move=legal_moves[0]
     if (board.turn==chess.WHITE):
         best_score= float('-inf')
         for m in legal_moves:
             board.push(m)
-            score=search.MiniMax(board, depth-1, False,stats)
+            score=search.MiniMax(board,depth-1,False,stats,eval_fn)
             board.pop()
             if(score==float('inf')):
                 best_score=score
@@ -91,7 +90,7 @@ def BotMiniMax(board, legal_moves, depth,stats):
         best_score= float(('inf'))
         for m in legal_moves:  
             board.push(m)
-            score=search.MiniMax(board, depth-1, True,stats)
+            score=search.MiniMax(board,depth-1,True,stats,eval_fn)
             board.pop()
             if(score==float('-inf')):
                 best_score=score
@@ -106,7 +105,7 @@ def BotMiniMax(board, legal_moves, depth,stats):
 
 
 
-def BotAlphaBeta(board, legal_moves, depth,stats):
+def BotAlphaBeta(board,legal_moves,depth,stats,eval_fn,moves_ordernoring_fn):
     best_move=legal_moves[0]
     alpha=float("-inf")
     beta=float("inf")
@@ -114,7 +113,7 @@ def BotAlphaBeta(board, legal_moves, depth,stats):
         best_score= float('-inf')
         for m in legal_moves:
             board.push(m)
-            score=search.AlphaBeta(board, depth-1,alpha,beta, False,stats)
+            score=search.AlphaBeta(board,depth-1,alpha,beta,False,stats,eval_fn,moves_ordernoring_fn)
             board.pop()
             if(score==float('inf')):
                 best_score=score
@@ -128,7 +127,7 @@ def BotAlphaBeta(board, legal_moves, depth,stats):
         best_score= float('inf')
         for m in legal_moves:  
             board.push(m)
-            score=search.AlphaBeta(board, depth-1, alpha, beta, True,stats)
+            score=search.AlphaBeta(board,depth-1,alpha,beta,True,stats,eval_fn,moves_ordernoring_fn)
             board.pop()
             if(score==float('-inf')):
                 best_score=score

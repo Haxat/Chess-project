@@ -1,5 +1,20 @@
 import chess
 
+def get_piece_value(piece_type):
+    if piece_type == chess.PAWN:
+        return 1
+    elif piece_type == chess.KNIGHT:
+        return 3
+    elif piece_type == chess.BISHOP:
+        return 3
+    elif piece_type == chess.ROOK:
+        return 5
+    elif piece_type == chess.QUEEN:
+        return 9
+    elif piece_type == chess.KING:
+        return 100
+    return 0
+
 PAWN_TABLE =   [0,0,0,0,0,0,0,0,
                 1,1,1,1,1,1,1,1,
                 1,1,2,2,2,2,1,1,
@@ -62,6 +77,14 @@ KING_END_TABLE= [-5,-4,-4,-4,-4,-4,-4,-5,
                     -4,-2,-2,-2,-2,-2,-2,-4,
                     -5,-4,-4,-4,-4,-4,-4,-5,]
 
+def mvv_lva_score(board, move):
+    attacker=board.piece_at(move.from_square)
+    victim=board.piece_at(move.to_square)
+    
+    #Prise en passant -> move_to_square == None
+    if victim is None:
+        victim=chess.PAWN
+    return get_piece_value(victim.piece_type)*10 - get_piece_value(attacker.piece_type)
 
 def is_endgame(board):
      return (

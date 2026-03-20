@@ -1,11 +1,15 @@
-import chess
 from evaluation import evaluate, terminal_score, evaluate_fast
+
+
+
 
 def init_stats():
     return{
         "nodes": 0,
         "leaves": 0,
         "cutoffs": 0,
+        "max_depth_reached": 0,
+        "q_nodes": 0
     }
 
 
@@ -51,7 +55,7 @@ def AlphaBeta(board,depth,alpha,beta,maximizing_player,stats):
     
     if(depth==0):
         stats["leaves"] +=1
-        return quiescence_search(board,alpha,beta,maximizing_player)
+        return quiescence_search(board,alpha,beta,maximizing_player,stats)
     
     legal_moves = order_moves(board,list(board.legal_moves))
 
@@ -89,7 +93,7 @@ def order_moves(board,legal_moves):
             non_capture.append(m)
     return capture + non_capture
 
-def quiescence_search(board,alpha,beta,maximizing_player):
+def quiescence_search(board,alpha,beta,maximizing_player,stats):
     ts = terminal_score(board)
     if ts is not None:
         return ts
@@ -104,7 +108,8 @@ def quiescence_search(board,alpha,beta,maximizing_player):
         for m in legal_moves:
             if(board.is_capture(m)):
                 board.push(m)
-                score=quiescence_search(board,alpha,beta,not maximizing_player)
+                stats["q_nodes"] +=1
+                score=quiescence_search(board,alpha,beta,not maximizing_player,stats)
                 board.pop()
                 best_score=max(best_score,score)
                 alpha=max(alpha,best_score)
@@ -119,7 +124,8 @@ def quiescence_search(board,alpha,beta,maximizing_player):
         for m in legal_moves:
             if(board.is_capture(m)):
                 board.push(m)
-                score=quiescence_search(board,alpha,beta,not maximizing_player)
+                stats["q_nodes"] +=1
+                score=quiescence_search(board,alpha,beta,not maximizing_player,stats)
                 board.pop()
                 best_score=min(best_score,score)
                 beta=min(beta,best_score)

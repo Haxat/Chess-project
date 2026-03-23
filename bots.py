@@ -106,6 +106,7 @@ def BotMiniMax(board, legal_moves, depth,stats,eval_fn):
 
 
 def BotAlphaBeta(board,legal_moves,depth,stats,eval_fn,moves_ordernoring_fn):
+    assert depth >= 1, "Depth must be >= 1"
     best_move=legal_moves[0]
     alpha=float("-inf")
     beta=float("inf")

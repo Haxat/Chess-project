@@ -5,12 +5,15 @@ import search
 import evaluation
 import csv
 
-def benchmark_position(board,depth,eval_fn,moves_ordernoring_fn):
+def benchmark_position(board,depth,engine_config):
     stats=search.init_stats()
+
+    eval_fn=engine_config["eval_fn"]
+    move_ordering_fn=engine_config["move_ordering_fn"]
 
     legal_moves=list(board.legal_moves)
     start = time.perf_counter()
-    best_move=bots.BotAlphaBeta(board,legal_moves,depth,stats,eval_fn,moves_ordernoring_fn)
+    best_move=bots.BotAlphaBeta(board,legal_moves,depth,stats,eval_fn,move_ordering_fn)
     end = time.perf_counter()
 
     elapsed = end - start
@@ -21,6 +24,7 @@ def benchmark_position(board,depth,eval_fn,moves_ordernoring_fn):
     q_nodes=stats["q_nodes"]
 
     return{
+        "config_engine":engine_config["name"],
         "best_move":str(best_move),
         "time":elapsed,
         "nodes":nodes,
@@ -95,19 +99,17 @@ def save_benchmark_results_csv(results, filename):
         writer.writeheader()
         writer.writerows(results)
 
-def run_benchmark_suite():
-    depth = 2
+def run_benchmark_suite(depth,engine_config):
     results=[]
-    eval_fn=evaluation.evaluate_fast
-    moves_ordernoring_fn=search.ordering_moves_MVV_LVA
     for name,fen in TEST_POSITIONS:
         board=chess.Board(fen)
         
-        result = benchmark_position(board,depth,eval_fn,moves_ordernoring_fn)
+        result = benchmark_position(board,depth,engine_config)
         result["position"] = name
         result["depth"] = depth
 
         print("===============Benchmark=================")
+        print(f"Config Name       :{result['config_engine']}")
         print(f"Position          :{result['position']}")
         print(f"Depth             :{result['depth']}")
         print(f"Best move         :{result['best_move']}")
@@ -139,9 +141,26 @@ def print_benchmark_summary(results):
     print(f"Temps moyen            :{total_time/len(results):.4f}s")
 
 
+
+
+#Engine 
+
+ENGINE_MVV_LVA={
+    "name" : "mvv_lva",
+    "eval_fn":evaluation.evaluate_fast,
+    "move_ordering_fn":search.ordering_moves_MVV_LVA,
+}
+
+ENGINE_BASIC={
+    "name":"basic",
+    "eval_fn":evaluation.evaluate_fast,
+    "move_ordering_fn":search.ordering_moves_simple,
+}
+
 if __name__=="__main__":
-
-    results= run_benchmark_suite()
-
+    depth=5
+    engine_config=ENGINE_BASIC
+    results= run_benchmark_suite(depth,engine_config)
     print_benchmark_summary(results)
     save_benchmark_results_csv(results,"benchmark_results.csv")
+

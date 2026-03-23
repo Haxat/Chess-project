@@ -78,13 +78,18 @@ KING_END_TABLE= [-5,-4,-4,-4,-4,-4,-4,-5,
                     -5,-4,-4,-4,-4,-4,-4,-5,]
 
 def mvv_lva_score(board, move):
-    attacker=board.piece_at(move.from_square)
-    victim=board.piece_at(move.to_square)
-    
-    #Prise en passant -> move_to_square == None
-    if victim is None:
-        victim=chess.PAWN
-    return get_piece_value(victim.piece_type)*10 - get_piece_value(attacker.piece_type)
+    attacker = board.piece_at(move.from_square)
+    assert attacker is not None, "Invalid move: no attacker on from_square"
+    attacker_type = attacker.piece_type
+
+    if board.is_en_passant(move):
+        victim_type = chess.PAWN
+    else:
+        victim = board.piece_at(move.to_square)
+        assert victim is not None, "Invalid capture: no victim on to_square"
+        victim_type = victim.piece_type
+
+    return get_piece_value(victim_type) * 10 - get_piece_value(attacker_type)
 
 def is_endgame(board):
      return (

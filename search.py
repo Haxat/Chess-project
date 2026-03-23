@@ -31,6 +31,7 @@ def MiniMax(board,depth,maximizing_player,stats,eval_fn):
         best_score=float('-inf')
         for m in legal_moves:         
             board.push(m)
+            assert m in board.legal_moves, "Trying to push an illegal move"
             score=MiniMax(board,depth-1,not maximizing_player,stats,eval_fn)
             board.pop()
             best_score=max(score,best_score)
@@ -62,6 +63,7 @@ def AlphaBeta(board,depth,alpha,beta,maximizing_player,stats,eval_fn,moves_order
         best_score=float('-inf')
         for m in legal_moves:         
             board.push(m)
+            assert m in board.legal_moves, "Trying to push an illegal move"
             score=AlphaBeta(board,depth-1,alpha,beta,not maximizing_player,stats,eval_fn,moves_ordernoring_fn)
             board.pop()
             best_score=max(best_score,score)
@@ -73,6 +75,7 @@ def AlphaBeta(board,depth,alpha,beta,maximizing_player,stats,eval_fn,moves_order
         best_score=float('inf')
         for m in legal_moves:
             board.push(m)
+            assert m in board.legal_moves, "Trying to push an illegal move"
             score=AlphaBeta(board,depth-1,alpha,beta,not maximizing_player,stats,eval_fn,moves_ordernoring_fn)
             board.pop()
             best_score=min(best_score,score)
